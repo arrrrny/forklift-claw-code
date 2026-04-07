@@ -133,9 +133,9 @@ pub fn resolve_model_alias(model: &str) -> String {
         .find_map(|(alias, metadata)| {
             (*alias == lower).then_some(match metadata.provider {
                 ProviderKind::Anthropic => match *alias {
-                    "opus" => "claude-opus-4-6",
-                    "sonnet" => "claude-sonnet-4-6",
-                    "haiku" => "claude-haiku-4-5-20251213",
+                    "opus" => "claude-opus",
+                    "sonnet" => "claude-sonnet",
+                    "haiku" => "claude-haiku",
                     _ => trimmed,
                 },
                 ProviderKind::Xai => match *alias {
@@ -208,11 +208,11 @@ pub fn max_tokens_for_model(model: &str) -> u32 {
 pub fn model_token_limit(model: &str) -> Option<ModelTokenLimit> {
     let canonical = resolve_model_alias(model);
     match canonical.as_str() {
-        "claude-opus-4-6" => Some(ModelTokenLimit {
+        "claude-opus" => Some(ModelTokenLimit {
             max_output_tokens: 32_000,
             context_window_tokens: 200_000,
         }),
-        "claude-sonnet-4-6" | "claude-haiku-4-5-20251213" => Some(ModelTokenLimit {
+        "claude-sonnet" | "claude-haiku" => Some(ModelTokenLimit {
             max_output_tokens: 64_000,
             context_window_tokens: 200_000,
         }),
@@ -283,7 +283,7 @@ mod tests {
     fn detects_provider_from_model_name_first() {
         assert_eq!(detect_provider_kind("grok"), ProviderKind::Xai);
         assert_eq!(
-            detect_provider_kind("claude-sonnet-4-6"),
+            detect_provider_kind("claude-sonnet"),
             ProviderKind::Anthropic
         );
     }
@@ -297,8 +297,8 @@ mod tests {
     #[test]
     fn returns_context_window_metadata_for_supported_models() {
         assert_eq!(
-            model_token_limit("claude-sonnet-4-6")
-                .expect("claude-sonnet-4-6 should be registered")
+            model_token_limit("claude-sonnet")
+                .expect("claude-sonnet should be registered")
                 .context_window_tokens,
             200_000
         );
@@ -313,7 +313,7 @@ mod tests {
     #[test]
     fn preflight_blocks_requests_that_exceed_the_model_context_window() {
         let request = MessageRequest {
-            model: "claude-sonnet-4-6".to_string(),
+            model: "claude-sonnet".to_string(),
             max_tokens: 64_000,
             messages: vec![InputMessage {
                 role: "user".to_string(),
@@ -345,7 +345,7 @@ mod tests {
                 estimated_total_tokens,
                 context_window_tokens,
             } => {
-                assert_eq!(model, "claude-sonnet-4-6");
+                assert_eq!(model, "claude-sonnet");
                 assert!(estimated_input_tokens > 136_000);
                 assert_eq!(requested_output_tokens, 64_000);
                 assert!(estimated_total_tokens > context_window_tokens);

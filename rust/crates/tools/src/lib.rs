@@ -1832,8 +1832,7 @@ fn git_ref_exists(reference: &str) -> bool {
     Command::new("git")
         .args(["rev-parse", "--verify", "--quiet", reference])
         .output()
-        .map(|output| output.status.success())
-        .unwrap_or(false)
+        .is_ok_and(|output| output.status.success())
 }
 
 fn git_stdout(args: &[&str]) -> Option<String> {
@@ -3233,7 +3232,7 @@ fn parse_skill_frontmatter_value(contents: &str, key: &str) -> Option<String> {
     None
 }
 
-const DEFAULT_AGENT_MODEL: &str = "claude-opus-4-6";
+const DEFAULT_AGENT_MODEL: &str = "claude-sonnet";
 const DEFAULT_AGENT_SYSTEM_DATE: &str = "2026-03-31";
 const DEFAULT_AGENT_MAX_ITERATIONS: usize = 32;
 
@@ -5044,8 +5043,7 @@ fn command_exists(command: &str) -> bool {
         .arg("-lc")
         .arg(format!("command -v {command} >/dev/null 2>&1"))
         .status()
-        .map(|status| status.success())
-        .unwrap_or(false)
+        .is_ok_and(|status| status.success())
 }
 
 #[allow(clippy::too_many_lines)]
@@ -6481,7 +6479,7 @@ mod tests {
                 prompt: "Do the work".to_string(),
                 subagent_type: Some("Explore".to_string()),
                 name: Some("complete-task".to_string()),
-                model: Some("claude-sonnet-4-6".to_string()),
+                model: Some("claude-sonnet".to_string()),
             },
             |job| {
                 persist_agent_terminal_state(

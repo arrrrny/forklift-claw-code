@@ -139,7 +139,7 @@ mod tests {
 
     #[test]
     fn resolves_existing_and_grok_aliases() {
-        assert_eq!(resolve_model_alias("opus"), "claude-opus-4-6");
+        assert_eq!(resolve_model_alias("opus"), "claude-opus");
         assert_eq!(resolve_model_alias("grok"), "grok-3");
         assert_eq!(resolve_model_alias("grok-mini"), "grok-3-mini");
     }
@@ -148,7 +148,7 @@ mod tests {
     fn provider_detection_prefers_model_family() {
         assert_eq!(detect_provider_kind("grok-3"), ProviderKind::Xai);
         assert_eq!(
-            detect_provider_kind("claude-sonnet-4-6"),
+            detect_provider_kind("claude-sonnet"),
             ProviderKind::Anthropic
         );
     }

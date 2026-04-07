@@ -55,7 +55,7 @@ use serde::Deserialize;
 use serde_json::{json, Map, Value};
 use tools::{GlobalToolRegistry, RuntimeToolDefinition, ToolSearchOutput};
 
-const DEFAULT_MODEL: &str = "claude-opus-4-6";
+const DEFAULT_MODEL: &str = "claude-sonnet";
 fn max_tokens_for_model(model: &str) -> u32 {
     if model.contains("opus") {
         32_000
@@ -660,7 +660,7 @@ fn omc_compatibility_note_for_unknown_slash_command(name: &str) -> Option<&'stat
 }
 
 fn render_suggestion_line(label: &str, suggestions: &[String]) -> Option<String> {
-    (!suggestions.is_empty()).then(|| format!("  {label:<16} {}", suggestions.join(", "),))
+    (!suggestions.is_empty()).then(|| format!("  {label:<16} {}", suggestions.join(", ")))
 }
 
 fn suggest_slash_commands(input: &str) -> Vec<String> {
@@ -737,9 +737,9 @@ fn levenshtein_distance(left: &str, right: &str) -> usize {
 
 fn resolve_model_alias(model: &str) -> &str {
     match model {
-        "opus" => "claude-opus-4-6",
-        "sonnet" => "claude-sonnet-4-6",
-        "haiku" => "claude-haiku-4-5-20251213",
+        "opus" => "claude-opus",
+        "sonnet" => "claude-sonnet",
+        "haiku" => "claude-haiku",
         _ => model,
     }
 }
@@ -4556,7 +4556,7 @@ fn render_memory_report() -> Result<String, Box<dyn std::error::Error>> {
             } else {
                 preview
             };
-            lines.push(format!("  {}. {}", index + 1, file.path.display(),));
+            lines.push(format!("  {}. {}", index + 1, file.path.display()));
             lines.push(format!(
                 "     lines={} preview={}",
                 file.content.lines().count(),
@@ -4838,8 +4838,7 @@ fn command_exists(name: &str) -> bool {
     Command::new("which")
         .arg(name)
         .output()
-        .map(|output| output.status.success())
-        .unwrap_or(false)
+        .is_ok_and(|output| output.status.success())
 }
 
 fn write_temp_text_file(
@@ -5833,9 +5832,15 @@ fn format_context_window_blocked_error(session_id: &str, error: &api::ApiError) 
             context_window_tokens,
         } => {
             lines.push(format!("  Model            {model}"));
-            lines.push(format!("  Input estimate   ~{estimated_input_tokens} tokens (heuristic)"));
-            lines.push(format!("  Requested output {requested_output_tokens} tokens"));
-            lines.push(format!("  Total estimate   ~{estimated_total_tokens} tokens (heuristic)"));
+            lines.push(format!(
+                "  Input estimate   ~{estimated_input_tokens} tokens (heuristic)"
+            ));
+            lines.push(format!(
+                "  Requested output {requested_output_tokens} tokens"
+            ));
+            lines.push(format!(
+                "  Total estimate   ~{estimated_total_tokens} tokens (heuristic)"
+            ));
             lines.push(format!("  Context window   {context_window_tokens} tokens"));
         }
         api::ApiError::Api { message, body, .. } => {
@@ -7011,7 +7016,7 @@ mod tests {
     #[test]
     fn context_window_preflight_errors_render_recovery_steps() {
         let error = ApiError::ContextWindowExceeded {
-            model: "claude-sonnet-4-6".to_string(),
+            model: "claude-sonnet".to_string(),
             estimated_input_tokens: 182_000,
             requested_output_tokens: 64_000,
             estimated_total_tokens: 246_000,
@@ -7026,7 +7031,7 @@ mod tests {
             "{rendered}"
         );
         assert!(
-            rendered.contains("Model            claude-sonnet-4-6"),
+            rendered.contains("Model            claude-sonnet"),
             "{rendered}"
         );
         assert!(
@@ -7445,7 +7450,7 @@ mod tests {
             parse_args(&args).expect("args should parse"),
             CliAction::Prompt {
                 prompt: "explain this".to_string(),
-                model: "claude-opus-4-6".to_string(),
+                model: "claude-opus".to_string(),
                 output_format: CliOutputFormat::Text,
                 allowed_tools: None,
                 permission_mode: PermissionMode::DangerFullAccess,
@@ -7455,9 +7460,9 @@ mod tests {
 
     #[test]
     fn resolves_known_model_aliases() {
-        assert_eq!(resolve_model_alias("opus"), "claude-opus-4-6");
-        assert_eq!(resolve_model_alias("sonnet"), "claude-sonnet-4-6");
-        assert_eq!(resolve_model_alias("haiku"), "claude-haiku-4-5-20251213");
+        assert_eq!(resolve_model_alias("opus"), "claude-opus");
+        assert_eq!(resolve_model_alias("sonnet"), "claude-sonnet");
+        assert_eq!(resolve_model_alias("haiku"), "claude-haiku");
         assert_eq!(resolve_model_alias("claude-opus"), "claude-opus");
     }
 
@@ -8033,7 +8038,7 @@ mod tests {
             vec!["session-old".to_string()],
         );
 
-        assert!(completions.contains(&"/model claude-sonnet-4-6".to_string()));
+        assert!(completions.contains(&"/model claude-sonnet".to_string()));
         assert!(completions.contains(&"/permissions workspace-write".to_string()));
         assert!(completions.contains(&"/session list".to_string()));
         assert!(completions.contains(&"/session switch session-current".to_string()));
@@ -8052,7 +8057,7 @@ mod tests {
 
         let banner = with_current_dir(&root, || {
             LiveCli::new(
-                "claude-sonnet-4-6".to_string(),
+                "claude-sonnet".to_string(),
                 true,
                 None,
                 PermissionMode::DangerFullAccess,
@@ -8932,7 +8937,7 @@ UU conflicted.rs",
             MessageResponse {
                 id: "msg-1".to_string(),
                 kind: "message".to_string(),
-                model: "claude-opus-4-6".to_string(),
+                model: "claude-opus".to_string(),
                 role: "assistant".to_string(),
                 content: vec![OutputContentBlock::ToolUse {
                     id: "tool-1".to_string(),
@@ -8967,7 +8972,7 @@ UU conflicted.rs",
             MessageResponse {
                 id: "msg-2".to_string(),
                 kind: "message".to_string(),
-                model: "claude-opus-4-6".to_string(),
+                model: "claude-opus".to_string(),
                 role: "assistant".to_string(),
                 content: vec![OutputContentBlock::ToolUse {
                     id: "tool-2".to_string(),
@@ -9002,7 +9007,7 @@ UU conflicted.rs",
             MessageResponse {
                 id: "msg-3".to_string(),
                 kind: "message".to_string(),
-                model: "claude-opus-4-6".to_string(),
+                model: "claude-opus".to_string(),
                 role: "assistant".to_string(),
                 content: vec![
                     OutputContentBlock::Thinking {
