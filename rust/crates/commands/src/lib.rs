@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 use std::env;
-use std::fmt;
+use std::fmt::{self, Write};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -2358,7 +2358,7 @@ pub fn resolve_skill_invocation(
                         .map(|s| s.name.clone())
                         .collect();
                     if !names.is_empty() {
-                        message.push_str(&format!("\n  Available skills: {}", names.join(", ")));
+                        let _ = write!(message, "\n  Available skills: {}", names.join(", "));
                     }
                 }
                 message.push_str("\n  Usage: /skills [list|install <path>|help|<skill> [args]]");
